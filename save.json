@@ -1,0 +1,13 @@
+import json
+
+personnage = {
+    "type": "vikings",
+    "sante": 100,
+    "max_sante": 120,
+    "atq": 50,
+    "boost": 10,
+    "vivant": True
+}
+
+with open("sauvegarde.json", "w") as f:
+    json.dump(personnage, f, indent=4)

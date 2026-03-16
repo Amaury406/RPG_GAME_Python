@@ -1,0 +1,52 @@
+[
+    {
+        "type": "vikings",
+        "sante": 120,
+        "max_sante": 120,
+        "atq": 50,
+        "boost": 0,
+        "vivant": true,
+        "exp": 1,
+        "niveau": 1
+    },
+    {
+        "type": "vikings",
+        "sante": 120,
+        "max_sante": 120,
+        "atq": 50,
+        "boost": 0,
+        "vivant": true,
+        "exp": 1,
+        "niveau": 1
+    },
+    {
+        "type": "vikings",
+        "sante": 120,
+        "max_sante": 120,
+        "atq": 50,
+        "boost": 0,
+        "vivant": true,
+        "exp": 1,
+        "niveau": 1
+    },
+    {
+        "type": "vikings",
+        "sante": 120,
+        "max_sante": 120,
+        "atq": 50,
+        "boost": 0,
+        "vivant": true,
+        "exp": 1,
+        "niveau": 1
+    },
+    {
+        "type": "vikings",
+        "sante": 20,
+        "max_sante": 120,
+        "atq": 50,
+        "boost": 0,
+        "vivant": true,
+        "exp": 1,
+        "niveau": 1
+    }
+]

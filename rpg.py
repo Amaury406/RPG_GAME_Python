@@ -2,7 +2,7 @@ import json
 import tkinter as tk
 from tkinter import messagebox, ttk
 from tkinter import simpledialog
-import random
+import os
 
 
 class Personnage:
@@ -118,6 +118,12 @@ class Guilde:
         return ", ".join([f"{count} {type_}{'s' if count > 1 else ''}" for type_, count in types.items()])
 
     def sauvegarder(self, nom_fichier):
+
+        if not os.path.exists("saves"):
+            os.makedirs("saves")
+
+        chemin = os.path.join("saves", nom_fichier)
+
         sauvegarde = []
         for p in self.equipe:
             sauvegarde.append({
@@ -130,13 +136,16 @@ class Guilde:
                 "exp": p._exp,
                 "niveau": p.niveau
             })
-        with open(nom_fichier, "w") as f:
+        with open(chemin, "w") as f:
             json.dump(sauvegarde, f, indent=4)
 
     def charger(self, nom_fichier):
         try:
-            with open(nom_fichier, "r") as f:
+
+            chemin = os.path.join("saves", nom_fichier)
+            with open(chemin, "r") as f:
                 sauvegarde = json.load(f)
+
             self.equipe = []
             for data in sauvegarde:
                 perso = Personnage()
@@ -169,7 +178,9 @@ class InterfaceCombat:
         self.root.geometry("1000x700")
         self.root.configure(bg='#2c3e50')
 
-        # Style
+        if not os.path.exists("saves"):
+            os.makedirs("saves")
+
         style = ttk.Style()
         style.theme_use('clam')
         style.configure('Custom.TButton', font=('Arial', 10, 'bold'))
@@ -182,15 +193,12 @@ class InterfaceCombat:
         self.root.mainloop()
 
     def creer_menu_principal(self):
-        # Effacer le contenu précédent
         for widget in self.root.winfo_children():
             widget.destroy()
 
-        # Frame principal
         main_frame = tk.Frame(self.root, bg='#2c3e50')
         main_frame.pack(expand=True, fill='both', padx=20, pady=20)
 
-        # Titre
         titre = tk.Label(main_frame, text="⚔️ COMBAT DE GUILDES ⚔️",
                          font=('Arial', 28, 'bold'),
                          bg='#2c3e50', fg='#ecf0f1')
@@ -201,7 +209,6 @@ class InterfaceCombat:
                               bg='#2c3e50', fg='#bdc3c7')
         sous_titre.pack(pady=10)
 
-        # Boutons
         btn_frame = tk.Frame(main_frame, bg='#2c3e50')
         btn_frame.pack(expand=True)
 
@@ -229,7 +236,6 @@ class InterfaceCombat:
                                 relief='raised', bd=3)
         btn_quitter.pack(pady=10)
 
-        # Footer
         footer = tk.Label(main_frame,
                           text="Développé dans le cadre du BTS SIO",
                           font=('Arial', 10),
@@ -240,7 +246,6 @@ class InterfaceCombat:
         self.creation_guilde(1)
 
     def creation_guilde(self, numero_joueur):
-        # Fenêtre de création de guilde
         creation = tk.Toplevel(self.root)
         creation.title(f"Création de la Guilde du Joueur {numero_joueur}")
         creation.geometry("500x400")
@@ -248,12 +253,10 @@ class InterfaceCombat:
         creation.transient(self.root)
         creation.grab_set()
 
-        # Variables
         nb_vikings = tk.IntVar(value=0)
         nb_sorciers = tk.IntVar(value=0)
         nb_ases = tk.IntVar(value=0)
 
-        # Titre
         tk.Label(creation, text=f"👥 Joueur {numero_joueur} - Composition",
                  font=('Arial', 16, 'bold'),
                  bg='#34495e', fg='#ecf0f1').pack(pady=20)
@@ -262,32 +265,27 @@ class InterfaceCombat:
                  font=('Arial', 11),
                  bg='#34495e', fg='#bdc3c7').pack()
 
-        # Frame pour les compteurs
         compteurs_frame = tk.Frame(creation, bg='#34495e')
         compteurs_frame.pack(pady=30)
 
-        # Vikings
         tk.Label(compteurs_frame, text="⚔️ Vikings :",
                  font=('Arial', 12),
                  bg='#34495e', fg='#e74c3c').grid(row=0, column=0, padx=10, pady=5)
         tk.Spinbox(compteurs_frame, from_=0, to=5, textvariable=nb_vikings,
                    width=10, font=('Arial', 12)).grid(row=0, column=1, padx=10)
 
-        # Sorciers
         tk.Label(compteurs_frame, text="🔮 Sorciers :",
                  font=('Arial', 12),
                  bg='#34495e', fg='#3498db').grid(row=1, column=0, padx=10, pady=5)
         tk.Spinbox(compteurs_frame, from_=0, to=5, textvariable=nb_sorciers,
                    width=10, font=('Arial', 12)).grid(row=1, column=1, padx=10)
 
-        # Ases
         tk.Label(compteurs_frame, text="✨ Ases :",
                  font=('Arial', 12),
                  bg='#34495e', fg='#f1c40f').grid(row=2, column=0, padx=10, pady=5)
         tk.Spinbox(compteurs_frame, from_=0, to=5, textvariable=nb_ases,
                    width=10, font=('Arial', 12)).grid(row=2, column=1, padx=10)
 
-        # Total
         self.total_label = tk.Label(compteurs_frame, text="Total: 0/5",
                                     font=('Arial', 12, 'bold'),
                                     bg='#34495e', fg='#2ecc71')
@@ -318,7 +316,6 @@ class InterfaceCombat:
                     "Erreur", "Vous devez avoir au moins 1 personnage !")
                 return
 
-            # Créer la guilde
             guilde = Guilde(f"Joueur {numero_joueur}")
 
             for _ in range(nb_vikings.get()):
@@ -375,7 +372,6 @@ class InterfaceCombat:
                   width=10, height=2).pack(side='left', padx=10)
 
     def lancer_combat(self):
-        # Créer l'interface de combat
         combat_window = tk.Toplevel(self.root)
         combat_window.title("⚔️ Combat en cours ⚔️")
         combat_window.geometry("1200x700")
@@ -385,16 +381,32 @@ class InterfaceCombat:
             combat_window, self.guilde1, self.guilde2, self.premier_joueur, self)
 
     def charger_partie(self):
-        # Boîte de dialogue pour choisir le fichier
-        fichier = simpledialog.askstring(
-            "Charger", "Nom du fichier de sauvegarde (ex: sauvegarde.json):")
+        from tkinter import filedialog
+
+        fichier = filedialog.askopenfilename(
+            title="Choisir une sauvegarde",
+            filetypes=[("Fichiers JSON", "*.json")],
+            initialdir="saves"
+        )
+
         if fichier:
-            guilde = Guilde("Chargée")
-            if guilde.charger(fichier):
-                messagebox.showinfo("Succès", "Partie chargée avec succès !")
-                # Ici, vous pouvez implémenter la suite
-            else:
-                messagebox.showerror("Erreur", "Fichier non trouvé !")
+            nom_fichier = os.path.basename(fichier)
+            if nom_fichier.startswith("g1_"):
+                guilde = Guilde("Joueur 1 (chargé)")
+                if guilde.charger(nom_fichier):
+                    self.guilde1 = guilde
+                    messagebox.showinfo("Succès", "Guilde 1 chargée")
+                    self.creation_guilde(2)
+                else:
+                    messagebox.showerror("Erreur", "Fichier invalide")
+            elif nom_fichier.startswith("g2_"):
+                guilde = Guilde("Joueur 2 (chargé)")
+                if guilde.charger(nom_fichier):
+                    self.guilde2 = guilde
+                    messagebox.showinfo("Succès", "Guilde 2 chargée")
+                    self.choisir_premier_joueur()
+                else:
+                    messagebox.showerror("Erreur", "Fichier invalide")
 
 
 class CombatGUI:
@@ -411,24 +423,21 @@ class CombatGUI:
         self.mettre_a_jour_affichage()
 
     def creer_interface(self):
-        # Frame principal
         main_frame = tk.Frame(self.parent, bg='#2c3e50')
         main_frame.pack(expand=True, fill='both', padx=10, pady=10)
 
-        # En-tête
         header = tk.Frame(main_frame, bg='#34495e', height=60)
         header.pack(fill='x', pady=(0, 10))
         header.pack_propagate(False)
 
-        tk.Label(header, text=f"⚔️ Tour du {self.tour} ⚔️",
-                 font=('Arial', 18, 'bold'),
-                 bg='#34495e', fg='#ecf0f1').pack(expand=True)
+        self.header_label = tk.Label(header, text=f"⚔️ Tour du {self.tour} ⚔️",
+                                     font=('Arial', 18, 'bold'),
+                                     bg='#34495e', fg='#ecf0f1')
+        self.header_label.pack(expand=True)
 
-        # Zone des deux guildes
         guildes_frame = tk.Frame(main_frame, bg='#2c3e50')
         guildes_frame.pack(fill='both', expand=True)
 
-        # Guilde 1
         self.g1_frame = tk.Frame(
             guildes_frame, bg='#34495e', relief='raised', bd=2)
         self.g1_frame.pack(side='left', fill='both', expand=True, padx=5)
@@ -447,12 +456,10 @@ class CombatGUI:
                                        bg='#34495e', fg='#bdc3c7')
         self.g1_composition.pack(pady=5)
 
-        # Liste des personnages guilde 1
         self.g1_listbox = tk.Listbox(self.g1_frame, bg='#2c3e50', fg='#ecf0f1',
                                      font=('Arial', 10), height=8)
         self.g1_listbox.pack(fill='both', expand=True, padx=10, pady=5)
 
-        # Guilde 2
         self.g2_frame = tk.Frame(
             guildes_frame, bg='#34495e', relief='raised', bd=2)
         self.g2_frame.pack(side='right', fill='both', expand=True, padx=5)
@@ -471,12 +478,10 @@ class CombatGUI:
                                        bg='#34495e', fg='#bdc3c7')
         self.g2_composition.pack(pady=5)
 
-        # Liste des personnages guilde 2
         self.g2_listbox = tk.Listbox(self.g2_frame, bg='#2c3e50', fg='#ecf0f1',
                                      font=('Arial', 10), height=8)
         self.g2_listbox.pack(fill='both', expand=True, padx=10, pady=5)
 
-        # Zone d'actions
         actions_frame = tk.Frame(main_frame, bg='#34495e', height=150)
         actions_frame.pack(fill='x', pady=10)
         actions_frame.pack_propagate(False)
@@ -485,7 +490,6 @@ class CombatGUI:
                  font=('Arial', 12, 'bold'),
                  bg='#34495e', fg='#ecf0f1').pack(pady=5)
 
-        # Boutons d'action
         boutons_frame = tk.Frame(actions_frame, bg='#34495e')
         boutons_frame.pack(expand=True)
 
@@ -527,7 +531,6 @@ class CombatGUI:
                                          width=12, height=2)
         self.btn_sauvegarder.pack(side='left', padx=5)
 
-        # Zone de log
         log_frame = tk.Frame(main_frame, bg='#34495e', height=100)
         log_frame.pack(fill='x', pady=5)
         log_frame.pack_propagate(False)
@@ -540,7 +543,6 @@ class CombatGUI:
                                 font=('Arial', 9), height=4)
         self.log_text.pack(fill='both', expand=True, padx=10, pady=5)
 
-        # Scrollbar pour le log
         scrollbar = tk.Scrollbar(self.log_text)
         scrollbar.pack(side='right', fill='y')
         self.log_text.config(yscrollcommand=scrollbar.set)
@@ -553,7 +555,6 @@ class CombatGUI:
         if not vivants:
             return
 
-        # Créer une boîte de dialogue pour choisir
         choix = tk.Toplevel(self.parent)
         choix.title(f"Choix du personnage actif - {guilde.nom}")
         choix.geometry("400x300")
@@ -590,18 +591,14 @@ class CombatGUI:
         choix.wait_window()
 
     def mettre_a_jour_affichage(self):
-        # Mettre à jour les listes
         self.g1_listbox.delete(0, tk.END)
         for perso in self.g1.equipe:
-            etat = "❤️" if perso.vivant else "💀"
-            self.g1_listbox.insert(tk.END, f"{etat} {perso}")
+            self.g1_listbox.insert(tk.END, f"{perso}")
 
         self.g2_listbox.delete(0, tk.END)
         for perso in self.g2.equipe:
-            etat = "❤️" if perso.vivant else "💀"
-            self.g2_listbox.insert(tk.END, f"{etat} {perso}")
+            self.g2_listbox.insert(tk.END, f"{perso}")
 
-        # Mettre à jour les actifs
         if self.g1.actif:
             self.g1_actif_label.config(
                 text=f"Personnage actif: {self.g1.actif}")
@@ -609,13 +606,13 @@ class CombatGUI:
             self.g2_actif_label.config(
                 text=f"Personnage actif: {self.g2.actif}")
 
-        # Mettre à jour la composition
         self.g1_composition.config(
             text=f"Composition: {self.g1.composition_texte()}")
         self.g2_composition.config(
             text=f"Composition: {self.g2.composition_texte()}")
 
-        # Activer/désactiver les boutons selon le tour
+        self.header_label.config(text=f"⚔️ Tour du {self.tour} ⚔️")
+
         joueur_actuel = 'joueur1' if self.tour == 'joueur1' else 'joueur2'
         guilde = self.g1 if joueur_actuel == 'joueur1' else self.g2
 
@@ -626,13 +623,6 @@ class CombatGUI:
                 state='normal' if guilde.actif.type == 'sorcier' else 'disabled')
             self.btn_boost.config(
                 state='normal' if guilde.actif.type == 'ases' else 'disabled')
-
-        # Mettre à jour l'en-tête
-        for widget in self.parent.winfo_children():
-            if isinstance(widget, tk.Frame) and widget.winfo_children():
-                for child in widget.winfo_children():
-                    if isinstance(child, tk.Label) and "Tour du" in child.cget("text"):
-                        child.config(text=f"⚔️ Tour du {self.tour} ⚔️")
 
     def action_attaque(self):
         joueur_actuel = 'joueur1' if self.tour == 'joueur1' else 'joueur2'
@@ -648,23 +638,20 @@ class CombatGUI:
         adversaire.actif.sante -= degats
 
         self.ajouter_log(
-            f"⚔️ {guilde.nom} attaque avec {guilde.actif.type} et inflige {degats} dégâts !")
+            f"⚔️ {guilde.nom} attaque et inflige {degats} dégâts !")
 
         if not adversaire.actif.vivant:
             self.ajouter_log(
                 f"💀 {adversaire.actif.type} de {adversaire.nom} est mort !")
 
-            # Vérifier si la guilde adverse a encore des personnages
             vivants = adversaire.personnages_vivants()
             if not vivants:
                 self.fin_combat(guilde.nom)
                 return
 
-            # Choisir un nouveau personnage actif pour l'adversaire
             self.choisir_actif('joueur2' if joueur_actuel ==
                                'joueur1' else 'joueur1')
 
-        # Changer de tour
         self.tour = 'joueur2' if self.tour == 'joueur1' else 'joueur1'
         self.mettre_a_jour_affichage()
 
@@ -679,7 +666,6 @@ class CombatGUI:
             self.ajouter_log("❌ Aucun allié à soigner !")
             return
 
-        # Créer une boîte de dialogue pour choisir la cible
         choix = tk.Toplevel(self.parent)
         choix.title("Choisir la cible du soin")
         choix.geometry("400x300")
@@ -708,8 +694,6 @@ class CombatGUI:
                 self.ajouter_log(
                     f"💚 {guilde.nom} soigne {cible.type} de {soin} PV !")
                 choix.destroy()
-
-                # Changer de tour
                 self.tour = 'joueur2' if self.tour == 'joueur1' else 'joueur1'
                 self.mettre_a_jour_affichage()
 
@@ -729,7 +713,6 @@ class CombatGUI:
             self.ajouter_log("❌ Aucun allié à booster !")
             return
 
-        # Créer une boîte de dialogue pour choisir la cible
         choix = tk.Toplevel(self.parent)
         choix.title("Choisir la cible du boost")
         choix.geometry("400x300")
@@ -757,8 +740,6 @@ class CombatGUI:
                 self.ajouter_log(
                     f"✨ {guilde.nom} booste {cible.type} (+20 attaque) !")
                 choix.destroy()
-
-                # Changer de tour
                 self.tour = 'joueur2' if self.tour == 'joueur1' else 'joueur1'
                 self.mettre_a_jour_affichage()
 
@@ -772,29 +753,14 @@ class CombatGUI:
         self.choisir_actif(joueur_actuel)
 
     def sauvegarder_partie(self):
-        nom_fichier = simpledialog.askstring(
-            "Sauvegarder", "Nom du fichier de sauvegarde:")
+        nom_fichier = simpledialog.askstring("Sauvegarder", "Nom du fichier:")
         if nom_fichier:
-            if not nom_fichier.endswith('.json'):
-                nom_fichier += '.json'
-
-            # Sauvegarder les deux guildes
+            nom_fichier = nom_fichier.replace(" ", "_") + ".json"
             self.g1.sauvegarder(f"g1_{nom_fichier}")
             self.g2.sauvegarder(f"g2_{nom_fichier}")
-
-            # Sauvegarder l'état du combat
-            etat_combat = {
-                "tour": self.tour,
-                "g1_actif": self.g1.equipe.index(self.g1.actif) if self.g1.actif else -1,
-                "g2_actif": self.g2.equipe.index(self.g2.actif) if self.g2.actif else -1
-            }
-
-            with open(f"combat_{nom_fichier}", "w") as f:
-                json.dump(etat_combat, f, indent=4)
-
-            self.ajouter_log(f"💾 Partie sauvegardée dans {nom_fichier}")
+            self.ajouter_log(f"💾 Partie sauvegardée")
             messagebox.showinfo(
-                "Succès", f"Partie sauvegardée dans {nom_fichier}")
+                "Succès", "Partie sauvegardée dans le dossier 'saves'")
 
     def ajouter_log(self, message):
         self.log_text.insert(tk.END, f"> {message}\n")
@@ -804,7 +770,6 @@ class CombatGUI:
         messagebox.showinfo("🏆 Victoire ! 🏆",
                             f"Félicitations ! {gagnant} remporte le combat !")
 
-        # Proposer de rejouer
         reponse = messagebox.askyesno(
             "Rejouer ?", "Voulez-vous faire un autre combat ?")
         if reponse:
@@ -815,6 +780,5 @@ class CombatGUI:
             self.interface_principale.creer_menu_principal()
 
 
-# Lancement du jeu
 if __name__ == "__main__":
     app = InterfaceCombat()
